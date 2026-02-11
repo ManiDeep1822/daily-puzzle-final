@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function validateAnswer(correct: any, user: any): boolean {
   const c = String(correct).trim().toLowerCase()
   const u = String(user).trim().toLowerCase()

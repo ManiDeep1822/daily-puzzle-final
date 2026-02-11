@@ -7,7 +7,7 @@ const STREAK_STORE = 'streak'
 
 export interface PuzzleProgress {
   date: string
-  answer: number
+  answer: string
   correct: boolean
 }
 
