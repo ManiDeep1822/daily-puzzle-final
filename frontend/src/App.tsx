@@ -39,11 +39,13 @@ function App() {
       const saved = await getProgress(today)
 
       if (saved) {
-        if (saved.answer !== undefined && !isNaN(saved.answer)) {
-          setAnswer(String(saved.answer))
+        if (saved.answer) {
+          setAnswer(saved.answer)
         }
+
         const correct = Boolean(saved.correct)
         setResult(correct ? 'Correct 🎉' : 'Wrong ❌')
+
         if (correct) setLocked(true)
       }
 
@@ -104,19 +106,19 @@ function App() {
   const handleSubmit = async () => {
     if (locked) return
 
-    const isCorrect = validateAnswer(puzzle.solution, answer)
-    const numericAnswer = Number(answer.trim())
-
-    if (isNaN(numericAnswer)) {
-      setResult('Enter a valid number ❗')
+    const trimmedAnswer = answer.trim()
+    if (!trimmedAnswer) {
+      setResult('Enter an answer ❗')
       return
     }
+
+    const isCorrect = validateAnswer(puzzle.solution, trimmedAnswer)
 
     setResult(isCorrect ? 'Correct 🎉' : 'Wrong ❌')
 
     const progress = {
       date: today,
-      answer: numericAnswer,
+      answer: trimmedAnswer, // ALWAYS STRING
       correct: isCorrect,
     }
 
