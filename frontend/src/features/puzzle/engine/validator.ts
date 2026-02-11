@@ -1,7 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export function validateAnswer(correct: any, user: any): boolean {
-  if (typeof correct === 'string') {
-    return String(user).toLowerCase().trim() === correct.toLowerCase()
+  const c = String(correct).trim().toLowerCase()
+  const u = String(user).trim().toLowerCase()
+
+  // if both are numeric → compare as numbers
+  if (!isNaN(Number(c)) && !isNaN(Number(u))) {
+    return Number(c) === Number(u)
   }
-  return Number(user) === correct
+
+  // otherwise compare as text
+  return c === u
 }
