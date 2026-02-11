@@ -1,5 +1,7 @@
 import { getSyncQueue, clearSyncQueue } from './indexeddb'
 
+const API = import.meta.env.VITE_API_URL
+
 export async function syncProgress(jwt: string | null) {
   if (!jwt) return
 
@@ -7,7 +9,7 @@ export async function syncProgress(jwt: string | null) {
   if (queue.length === 0) return
 
   try {
-    const res = await fetch('http://localhost:5000/progress/batch', {
+    const res = await fetch(`${API}/progress/batch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
