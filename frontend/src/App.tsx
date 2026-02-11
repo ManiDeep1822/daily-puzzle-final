@@ -84,7 +84,11 @@ function App() {
     const isCorrect = validateAnswer(puzzle.solution, answer)
     setResult(isCorrect ? 'Correct 🎉' : 'Wrong ❌')
 
-    const progress = { date: today, answer, correct: isCorrect }
+    const progress = {
+      date: today,
+      answer: Number(answer),
+      correct: isCorrect,
+    }
 
     await saveProgress(progress)
     await addToSyncQueue(progress)
