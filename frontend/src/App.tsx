@@ -18,6 +18,8 @@ import {
 import { syncProgress } from './lib/sync'
 import { updateStreak } from './lib/streak'
 
+const API = import.meta.env.VITE_API_URL
+
 function App() {
   const [user, setUser] = useState<any>(null)
   const [jwt, setJwt] = useState<string | null>(null)
@@ -25,6 +27,8 @@ function App() {
   const [result, setResult] = useState<string | null>(null)
   const [streakCount, setStreakCount] = useState(0)
   const [locked, setLocked] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const today = new Date().toISOString().slice(0, 10)
   const puzzle = useMemo(() => getTodayPuzzle(), [])
@@ -50,25 +54,42 @@ function App() {
 
   /* ---------------- Login ---------------- */
   const handleLogin = async () => {
-    const res = await signInWithPopup(auth, googleProvider)
-    setUser(res.user)
+    if (loading) return
+    setLoading(true)
+    setError(null)
 
-    const idToken = await res.user.getIdToken()
+    try {
+      const res = await signInWithPopup(auth, googleProvider)
+      setUser(res.user)
 
-    const backendRes = await fetch('http://localhost:5000/auth/firebase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
-    })
+      const idToken = await res.user.getIdToken()
 
-    const data = await backendRes.json()
-    setJwt(data.token)
+      const backendRes = await fetch(`${API}/auth/firebase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      })
+
+      if (!backendRes.ok) throw new Error('Backend auth failed')
+
+      const data = await backendRes.json()
+      setJwt(data.token)
+    } catch (err: any) {
+      console.error(err)
+      setError('Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   /* ---------------- Logout ---------------- */
   const handleLogout = async () => {
-    await syncProgress(jwt)
-    await signOut(auth)
+    try {
+      await syncProgress(jwt)
+      await signOut(auth)
+    } catch (e) {
+      console.error(e)
+    }
 
     setUser(null)
     setJwt(null)
@@ -81,12 +102,14 @@ function App() {
   const handleSubmit = async () => {
     if (locked) return
 
-    const isCorrect = validateAnswer(puzzle.solution, answer)
+    const numericAnswer = Number(answer)
+    const isCorrect = validateAnswer(puzzle.solution, numericAnswer)
+
     setResult(isCorrect ? 'Correct 🎉' : 'Wrong ❌')
 
     const progress = {
       date: today,
-      answer: Number(answer),
+      answer: numericAnswer,
       correct: isCorrect,
     }
 
@@ -104,7 +127,7 @@ function App() {
   }
 
   /* =======================================================
-     LOGIN SCREEN UI
+     LOGIN SCREEN
   ======================================================= */
   if (!user) {
     return (
@@ -118,21 +141,22 @@ function App() {
             Solve one puzzle every day. Keep your streak alive.
           </p>
 
-          {/* Google Button */}
           <button
             onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-black font-semibold hover:scale-[1.02] transition shadow-lg"
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-black font-semibold hover:scale-[1.02] transition shadow-lg disabled:opacity-50"
           >
-            <span className="text-lg">🔐</span>
-            Continue with Google
+            {loading ? 'Signing in...' : '🔐 Continue with Google'}
           </button>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
         </div>
       </div>
     )
   }
 
   /* =======================================================
-     GAME SCREEN UI
+     GAME SCREEN
   ======================================================= */
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex flex-col">
@@ -194,6 +218,8 @@ function App() {
               {result}
             </p>
           )}
+
+          {/* History */}
           <HistoryGrid />
         </div>
       </main>
