@@ -102,8 +102,8 @@ function App() {
   const handleSubmit = async () => {
     if (locked) return
 
-    const numericAnswer = Number(answer)
-    const isCorrect = validateAnswer(puzzle.solution, numericAnswer)
+    const isCorrect = validateAnswer(puzzle.solution, answer)
+    const numericAnswer = Number(answer.trim())
 
     setResult(isCorrect ? 'Correct 🎉' : 'Wrong ❌')
 
