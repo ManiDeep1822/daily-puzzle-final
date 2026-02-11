@@ -39,7 +39,9 @@ function App() {
       const saved = await getProgress(today)
 
       if (saved) {
-        setAnswer(String(saved.answer))
+        if (saved.answer !== undefined && !isNaN(saved.answer)) {
+          setAnswer(String(saved.answer))
+        }
         const correct = Boolean(saved.correct)
         setResult(correct ? 'Correct 🎉' : 'Wrong ❌')
         if (correct) setLocked(true)
@@ -104,6 +106,11 @@ function App() {
 
     const isCorrect = validateAnswer(puzzle.solution, answer)
     const numericAnswer = Number(answer.trim())
+
+    if (isNaN(numericAnswer)) {
+      setResult('Enter a valid number ❗')
+      return
+    }
 
     setResult(isCorrect ? 'Correct 🎉' : 'Wrong ❌')
 
