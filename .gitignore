@@ -1,0 +1,12 @@
+node_modules
+.env
+backend/.env
+frontend/.env
+
+# Firebase secrets
+backend/src/config/firebase-service-account.json*
+firebase-service-account.json*
+
+dist
+build
+
